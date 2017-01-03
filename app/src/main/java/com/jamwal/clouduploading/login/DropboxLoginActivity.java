@@ -10,7 +10,7 @@ import com.dropbox.core.android.Auth;
 import com.dropbox.core.v2.users.FullAccount;
 import com.jamwal.clouduploading.DbxClient.DropboxClientFactory;
 import com.jamwal.clouduploading.R;
-import com.jamwal.clouduploading.asynctasks.GetUserAccountDetails;
+import com.jamwal.clouduploading.asynctasks.GetUserAccountDetailsTask;
 import com.jamwal.clouduploading.base.DropboxActivity;
 import com.jamwal.clouduploading.interfaces.AccountDetailCallback;
 
@@ -33,7 +33,7 @@ public class DropboxLoginActivity extends DropboxActivity {
 
     @Override
     protected void loadData() {
-        new GetUserAccountDetails(DropboxClientFactory.getClient(), new AccountDetailCallback() {
+        new GetUserAccountDetailsTask(DropboxClientFactory.getClient(), new AccountDetailCallback() {
             @Override
             public void onAccountDetailSuccess(FullAccount account) {
                 SharedPreferences prefs = getSharedPreferences("dropbox-sample", MODE_PRIVATE);

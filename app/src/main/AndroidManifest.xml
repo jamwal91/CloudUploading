@@ -28,15 +28,18 @@
         </activity>
 
         <activity android:name=".activities.LoginActivity" />
-        <activity android:name=".login.DropboxLoginActivity"
-            android:theme="@style/dropboxTheme"/>
-        <activity android:name=".activities.FilesActivity" />
+        <activity
+            android:name=".login.DropboxLoginActivity"
+            android:theme="@style/dropboxTheme" />
+        <activity
+            android:name=".activities.FilesActivity"
+            android:label="@string/title_activity_files" />
 
 
         <activity
             android:name="com.dropbox.core.android.AuthActivity"
             android:configChanges="orientation|keyboard"
-            android:launchMode="singleTask" >
+            android:launchMode="singleTask">
             <intent-filter>
 
                 <!-- Change this to be db- followed by your app key -->

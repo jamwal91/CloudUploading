@@ -32,6 +32,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             startActivity(new Intent(this, FilesActivity.class));
+            finish();
         } else if (resultCode == RESULT_CANCELED) {
             Toast.makeText(this, "Login Failure...!", Toast.LENGTH_SHORT).show();
         }

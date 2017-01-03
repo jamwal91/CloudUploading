@@ -3,4 +3,7 @@
     <string name="action_settings">Settings</string>
 
     <string name="btn_val_dropbox">Login Dropbox</string>
+
+    <string name="app_key">YOUR_APP_KEY_HERE</string>
+    <string name="title_activity_files">Files</string>
 </resources>
