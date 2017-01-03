@@ -186,7 +186,7 @@ public class FilesActivity extends AppCompatActivity {
                 break;
             case DOWNLOAD:
                 if (mSelectedFile != null) {
-                    downloadFile(mSelectedFile);
+//                    downloadFile(mSelectedFile);
                 } else {
                     Log.e(TAG, "No file selected to download.");
                 }
