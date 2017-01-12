@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#FF3F51B5</color>
+    <color name="colorPrimaryDark">#FF303F9F</color>
+    <color name="colorAccent">#FFFF4081</color>
 
     <color name="dbx_white_opaque_100">#FFFFFFFF</color>
     <color name="dbx_primary">#FF007EE5</color>
@@ -11,4 +11,21 @@
     <color name="dbx_color_control_activated">@color/dbx_primary</color>
     <color name="dbx_color_control_highlight">@color/dbx_primary_dark</color>
     <color name="dbx_color_switch_thumbNormal">@color/dbx_primary</color>
+
+    <color name="app_blue">#1bb5ec</color>
+    <color name="app_blue_dark">#0398cd</color>
+
+    <color name="gray_bg">#ebebeb</color>
+    <color name="gray_light">#cccccc</color>
+    <color name="gray_dark">#a1a1a1</color>
+
+    <color name="dark_text">#5a5a5a</color>
+
+    <color name="app_red">#da0038</color>
+
+    <color name="transparent_black">#80000000</color>
+    <color name="transparent_white">#B2ffffff</color>
+
+    <color name="connected">#64F20B</color>
+    <color name="not_connected">@color/app_red</color>
 </resources>

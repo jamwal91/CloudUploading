@@ -6,4 +6,12 @@
 
     <string name="app_key">YOUR_APP_KEY_HERE</string>
     <string name="title_activity_files">Files</string>
+
+    <string name="text_msg_delete">Are you certain, You want to delete this file?</string>
+
+    <string name="text_edit_name">Edit file name</string>
+    <string name="text_rename">rename</string>
+    <string name="text_delete">delete</string>
+    <string name="text_cancel">cancel</string>
+    <string name="text_error">Enter name first</string>
 </resources>

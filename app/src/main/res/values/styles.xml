@@ -22,7 +22,8 @@
     </style>
 
     <style name="dropboxTheme" parent="Theme.AppCompat.Light.NoActionBar">
-        <item name="android:windowBackground">@drawable/dropbox</item>
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:background">@drawable/dropbox</item>
     </style>
 
 </resources>

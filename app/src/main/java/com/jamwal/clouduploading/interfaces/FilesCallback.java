@@ -11,4 +11,10 @@ public interface FilesCallback {
     void onFolderClicked(FolderMetadata folder);
 
     void onFileClicked(FileMetadata file);
+
+    void onRenameFile(String fromName);
+
+    void onDeleteFile(String filePath);
+
+    void onShareFile();
 }

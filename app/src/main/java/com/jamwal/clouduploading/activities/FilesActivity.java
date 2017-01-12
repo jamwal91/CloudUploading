@@ -18,27 +18,37 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.FolderMetadata;
 import com.dropbox.core.v2.files.ListFolderResult;
+import com.dropbox.core.v2.files.Metadata;
 import com.jamwal.clouduploading.DbxClient.DropboxClientFactory;
 import com.jamwal.clouduploading.DbxClient.PicassoClient;
 import com.jamwal.clouduploading.R;
 import com.jamwal.clouduploading.adapters.FilesAdapters;
+import com.jamwal.clouduploading.asynctasks.DeleteFileTask;
 import com.jamwal.clouduploading.asynctasks.DownloadFileTask;
 import com.jamwal.clouduploading.asynctasks.GetFilesDetailsTask;
+import com.jamwal.clouduploading.asynctasks.RenameFileTask;
 import com.jamwal.clouduploading.asynctasks.UploadFileTasks;
+import com.jamwal.clouduploading.interfaces.DeleteFileCallback;
 import com.jamwal.clouduploading.interfaces.DownloadFileCallback;
 import com.jamwal.clouduploading.interfaces.FilesCallback;
 import com.jamwal.clouduploading.interfaces.FilesDetailCallback;
+import com.jamwal.clouduploading.interfaces.RenameFileCallback;
 import com.jamwal.clouduploading.interfaces.UploadFileCallback;
+import com.jamwal.clouduploading.swipe.util.Attributes;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -83,8 +93,24 @@ public class FilesActivity extends AppCompatActivity {
                 mSelectedFile = file;
                 performWithPermissions(FileAction.DOWNLOAD);
             }
+
+            @Override
+            public void onRenameFile(String fromName) {
+                showDialogToRenameFile(fromName);
+            }
+
+            @Override
+            public void onDeleteFile(String filePath) {
+                showDialogDeleteFile(filePath);
+            }
+
+            @Override
+            public void onShareFile() {
+
+            }
         });
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mFilesAdapter.setMode(Attributes.Mode.Single);
         recyclerView.setAdapter(mFilesAdapter);
 
         mSelectedFile = null;
@@ -186,7 +212,7 @@ public class FilesActivity extends AppCompatActivity {
                 break;
             case DOWNLOAD:
                 if (mSelectedFile != null) {
-//                    downloadFile(mSelectedFile);
+                    downloadFile(mSelectedFile);
                 } else {
                     Log.e(TAG, "No file selected to download.");
                 }
@@ -208,7 +234,6 @@ public class FilesActivity extends AppCompatActivity {
             @Override
             public void onFileDetailsSeccess(ListFolderResult result) {
                 dialog.dismiss();
-
                 mFilesAdapter.setFiles(result.getEntries());
             }
 
@@ -229,14 +254,13 @@ public class FilesActivity extends AppCompatActivity {
         final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setCancelable(false);
-        dialog.setMessage("Downloading");
+        dialog.setMessage("Downloading File...!");
         dialog.show();
 
         new DownloadFileTask(DropboxClientFactory.getClient(), new DownloadFileCallback() {
             @Override
             public void onDownloadComplete(File result) {
                 dialog.dismiss();
-
                 if (result != null) {
                     viewFileInExternalApp(result);
                 }
@@ -272,11 +296,75 @@ public class FilesActivity extends AppCompatActivity {
         }
     }
 
+
+    private void renameFile(String fromName, String toName) {
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setCancelable(false);
+        dialog.setMessage("Renaming File...!");
+        dialog.show();
+        new RenameFileTask(DropboxClientFactory.getClient(), new RenameFileCallback() {
+            @Override
+            public void onRenameSuccess(Metadata result) {
+                mFilesAdapter.update(result);
+                dialog.dismiss();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                e.printStackTrace();
+                Toast.makeText(FilesActivity.this,
+                        "An error has occurred",
+                        Toast.LENGTH_SHORT)
+                        .show();
+                dialog.dismiss();
+            }
+        }).execute(fromName, toName);
+    }
+
+    private void showDialogDeleteFile(final String filePath) {
+        new AlertDialog.Builder(this)
+                .setMessage(getString(R.string.text_msg_delete))
+                .setPositiveButton(getString(R.string.text_delete), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteSelectedFile(filePath);
+                    }
+                })
+                .setNegativeButton(getString(R.string.text_cancel), null)
+                .create()
+                .show();
+    }
+
+    private void deleteSelectedFile(String filePath) {
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setCancelable(false);
+        dialog.setMessage("Deleting File...!");
+        dialog.show();
+        new DeleteFileTask(DropboxClientFactory.getClient(), new DeleteFileCallback() {
+            @Override
+            public void onDeleteComplete() {
+                dialog.cancel();
+                mFilesAdapter.removeFile();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                dialog.cancel();
+                Log.e(TAG, "Failed to Generate Shared Link.", e);
+                Toast.makeText(FilesActivity.this,
+                        "An error has occurred",
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }).execute(filePath);
+    }
+
     private void uploadFile(String fileUri) {
         final ProgressDialog dialog = new ProgressDialog(this);
         dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         dialog.setCancelable(false);
-        dialog.setMessage("Uploading");
+        dialog.setMessage("Uploading File...!");
         dialog.show();
 
         new UploadFileTasks(DropboxClientFactory.getClient(), new UploadFileCallback() {
@@ -289,8 +377,8 @@ public class FilesActivity extends AppCompatActivity {
                 Toast.makeText(FilesActivity.this, message, Toast.LENGTH_SHORT)
                         .show();
 
-                // Reload the folder
-                loadData();
+                mFilesAdapter.addUploadedFile(result);
+
             }
 
             @Override
@@ -304,6 +392,49 @@ public class FilesActivity extends AppCompatActivity {
                         .show();
             }
         }).execute(fileUri, mPath);
+    }
+
+    public void showDialogToRenameFile(final String name) {
+        LayoutInflater layoutInflaterAndroid = LayoutInflater.from(this);
+        View mView = layoutInflaterAndroid.inflate(R.layout.layout_edit_text, null);
+
+        AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(this);
+        alertDialogBuilderUserInput.setMessage(getString(R.string.text_edit_name));
+        alertDialogBuilderUserInput.setView(mView);
+
+        String nameWithoutExt = name.substring(0, name.lastIndexOf("."));
+        final String ext = name.substring(name.lastIndexOf(".") + 1);
+
+        final EditText et_edit = (EditText) mView.findViewById(R.id.enter_name);
+        et_edit.setText(nameWithoutExt);
+        et_edit.setSelection(et_edit.getText().length(), et_edit.getText().length());
+
+        alertDialogBuilderUserInput
+                .setCancelable(false)
+                .setPositiveButton(getString(R.string.text_rename), new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogBox, int id) {
+                        if (TextUtils.isEmpty(et_edit.getText().toString().trim())) {
+                            et_edit.setText("");
+                            et_edit.setError(getString(R.string.text_error));
+                        } else {
+                            renameFile("/" + name, "/" + et_edit.getText().toString());
+//                            moveFile(defaultFolder + "/" + mFiles.get(position).getMetadata().getName(), defaultFolder + "/" + et_edit.getText().toString().trim() + "." + ext, position);
+                        }
+                    }
+                })
+                .setNegativeButton(getString(R.string.text_cancel),
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialogBox, int id) {
+                                dialogBox.cancel();
+                            }
+                        });
+
+        final AlertDialog alertDialog = alertDialogBuilderUserInput.create();
+        assert alertDialog.getWindow() != null;
+        alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+        alertDialog.show();
+        alertDialog.setCancelable(false);
+        alertDialog.setCanceledOnTouchOutside(false);
     }
 
     private void performWithPermissions(final FileAction action) {
