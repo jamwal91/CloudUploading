@@ -32,7 +32,6 @@ public class DeleteFolderTask extends AsyncTask<String, Void, Metadata> {
     @Override
     protected Metadata doInBackground(String... params) {
         try {
-//            mDbxClient.files().permanentlyDelete(params[0]);
             return mDbxClient.files().delete(params[0]);
         } catch (DbxException e) {
             mException = e;

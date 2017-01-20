@@ -24,6 +24,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.MimeTypeMap;
 import android.widget.EditText;
@@ -33,20 +34,25 @@ import com.dropbox.core.v2.files.FileMetadata;
 import com.dropbox.core.v2.files.FolderMetadata;
 import com.dropbox.core.v2.files.ListFolderResult;
 import com.dropbox.core.v2.files.Metadata;
+import com.dropbox.core.v2.sharing.SharedLinkMetadata;
 import com.jamwal.clouduploading.DbxClient.DropboxClientFactory;
 import com.jamwal.clouduploading.DbxClient.PicassoClient;
 import com.jamwal.clouduploading.R;
 import com.jamwal.clouduploading.adapters.FilesAdapters;
+import com.jamwal.clouduploading.asynctasks.CreateSharedLinkTask;
 import com.jamwal.clouduploading.asynctasks.DeleteFileTask;
 import com.jamwal.clouduploading.asynctasks.DownloadFileTask;
 import com.jamwal.clouduploading.asynctasks.GetFilesDetailsTask;
 import com.jamwal.clouduploading.asynctasks.RenameFileTask;
+import com.jamwal.clouduploading.asynctasks.SharedLinkTask;
 import com.jamwal.clouduploading.asynctasks.UploadFileTasks;
+import com.jamwal.clouduploading.interfaces.CreateSharedLinkCallback;
 import com.jamwal.clouduploading.interfaces.DeleteFileCallback;
 import com.jamwal.clouduploading.interfaces.DownloadFileCallback;
 import com.jamwal.clouduploading.interfaces.FilesCallback;
 import com.jamwal.clouduploading.interfaces.FilesDetailCallback;
 import com.jamwal.clouduploading.interfaces.RenameFileCallback;
+import com.jamwal.clouduploading.interfaces.SharedLinkCallback;
 import com.jamwal.clouduploading.interfaces.UploadFileCallback;
 import com.jamwal.clouduploading.swipe.util.Attributes;
 
@@ -60,6 +66,8 @@ public class FilesActivity extends AppCompatActivity {
 
     public final static String EXTRA_PATH = "FilesActivity_Path";
     private static final int PICKFILE_REQUEST_CODE = 1;
+
+    private ViewGroup nullParent = null;
 
     private String mPath;
     private FilesAdapters mFilesAdapter;
@@ -105,8 +113,8 @@ public class FilesActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onShareFile() {
-
+            public void onShareFile(String filePath) {
+                generateSharedLink(filePath);
             }
         });
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -296,6 +304,61 @@ public class FilesActivity extends AppCompatActivity {
         }
     }
 
+    private void generateSharedLink(final String filePath) {
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        dialog.setCancelable(false);
+        dialog.setMessage("Generating Shared Link...!");
+        dialog.show();
+        new SharedLinkTask(DropboxClientFactory.getClient(), new SharedLinkCallback() {
+            @Override
+            public void onSharedLinkGenerated(List<SharedLinkMetadata> result) {
+                if (result.size() > 0) {
+                    shareLink(result.get(0).getUrl());
+                    dialog.dismiss();
+                } else {
+                    createSharedLink(filePath, dialog);
+                }
+            }
+
+            @Override
+            public void onError(Exception e) {
+                dialog.dismiss();
+                Log.e(TAG, "Failed to Generate Shared Link.", e);
+                Toast.makeText(FilesActivity.this,
+                        "An error has occurred",
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }).execute(filePath);
+    }
+
+    private void createSharedLink(String filePath, final ProgressDialog dialog) {
+        new CreateSharedLinkTask(DropboxClientFactory.getClient(), new CreateSharedLinkCallback() {
+            @Override
+            public void onSharedLinkCreated(String result) {
+                dialog.dismiss();
+                shareLink(result);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                dialog.dismiss();
+                Log.e(TAG, "Failed to Generate Shared Link.", e);
+                Toast.makeText(FilesActivity.this,
+                        "An error has occurred",
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+        }).execute(filePath);
+    }
+
+    private void shareLink(String shareUrl) {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareUrl);
+        startActivity(Intent.createChooser(shareIntent, "Share link using"));
+    }
 
     private void renameFile(String fromName, String toName) {
         final ProgressDialog dialog = new ProgressDialog(this);
@@ -396,14 +459,13 @@ public class FilesActivity extends AppCompatActivity {
 
     public void showDialogToRenameFile(final String name) {
         LayoutInflater layoutInflaterAndroid = LayoutInflater.from(this);
-        View mView = layoutInflaterAndroid.inflate(R.layout.layout_edit_text, null);
+        View mView = layoutInflaterAndroid.inflate(R.layout.layout_edit_text, nullParent);
 
         AlertDialog.Builder alertDialogBuilderUserInput = new AlertDialog.Builder(this);
         alertDialogBuilderUserInput.setMessage(getString(R.string.text_edit_name));
         alertDialogBuilderUserInput.setView(mView);
 
         String nameWithoutExt = name.substring(0, name.lastIndexOf("."));
-        final String ext = name.substring(name.lastIndexOf(".") + 1);
 
         final EditText et_edit = (EditText) mView.findViewById(R.id.enter_name);
         et_edit.setText(nameWithoutExt);
@@ -418,7 +480,6 @@ public class FilesActivity extends AppCompatActivity {
                             et_edit.setError(getString(R.string.text_error));
                         } else {
                             renameFile("/" + name, "/" + et_edit.getText().toString());
-//                            moveFile(defaultFolder + "/" + mFiles.get(position).getMetadata().getName(), defaultFolder + "/" + et_edit.getText().toString().trim() + "." + ext, position);
                         }
                     }
                 })

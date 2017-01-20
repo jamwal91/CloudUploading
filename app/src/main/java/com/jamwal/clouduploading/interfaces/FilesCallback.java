@@ -16,5 +16,5 @@ public interface FilesCallback {
 
     void onDeleteFile(String filePath);
 
-    void onShareFile();
+    void onShareFile(String filePath);
 }

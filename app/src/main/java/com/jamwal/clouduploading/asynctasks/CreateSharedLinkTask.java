@@ -5,16 +5,15 @@ import android.os.AsyncTask;
 
 import com.dropbox.core.DbxException;
 import com.dropbox.core.v2.DbxClientV2;
+import com.jamwal.clouduploading.interfaces.CreateSharedLinkCallback;
 
 public class CreateSharedLinkTask extends AsyncTask<String, Void, String> {
 
-    private final Context mContext;
     private final DbxClientV2 mDbxClient;
-    private final Callback mCallback;
+    private final CreateSharedLinkCallback mCallback;
     private Exception mException;
 
-    public CreateSharedLinkTask(Context context, DbxClientV2 dbxClient, Callback callback) {
-        mContext = context;
+    public CreateSharedLinkTask(DbxClientV2 dbxClient, CreateSharedLinkCallback callback) {
         mDbxClient = dbxClient;
         mCallback = callback;
     }
@@ -27,7 +26,7 @@ public class CreateSharedLinkTask extends AsyncTask<String, Void, String> {
         } else if (result == null) {
             mCallback.onError(null);
         } else {
-            mCallback.onUploadComplete(result);
+            mCallback.onSharedLinkCreated(result);
         }
     }
 
@@ -36,14 +35,8 @@ public class CreateSharedLinkTask extends AsyncTask<String, Void, String> {
         try {
             return mDbxClient.sharing().createSharedLinkWithSettings(params[0]).getUrl();
         } catch (DbxException ex) {
-            ex.printStackTrace();
+            mException = ex;
         }
         return null;
-    }
-
-    public interface Callback {
-        void onUploadComplete(String result);
-
-        void onError(Exception e);
     }
 }

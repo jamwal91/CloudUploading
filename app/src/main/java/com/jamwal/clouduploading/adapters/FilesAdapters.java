@@ -20,8 +20,6 @@ import com.jamwal.clouduploading.swipe.SwipeLayout;
 import com.jamwal.clouduploading.swipe.adapters.RecyclerSwipeAdapter;
 import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -101,6 +99,7 @@ public class FilesAdapters extends RecyclerSwipeAdapter<FilesAdapters.MetadataVi
         private final ImageView iv_close;
         private final ImageView iv_edit;
         private final ImageView iv_delete;
+        private final ImageView iv_share;
 
 
         MetadataViewHolder(View itemView) {
@@ -113,12 +112,14 @@ public class FilesAdapters extends RecyclerSwipeAdapter<FilesAdapters.MetadataVi
             iv_close = (ImageView) itemView.findViewById(R.id.iv_close);
             iv_edit = (ImageView) itemView.findViewById(R.id.iv_edit);
             iv_delete = (ImageView) itemView.findViewById(R.id.iv_delete);
+            iv_share = (ImageView) itemView.findViewById(R.id.iv_share);
 
             itemView.setOnClickListener(this);
             iv_more.setOnClickListener(this);
             iv_close.setOnClickListener(this);
             iv_edit.setOnClickListener(this);
             iv_delete.setOnClickListener(this);
+            iv_share.setOnClickListener(this);
 
             swipeLayout.setOnTouchListener(new View.OnTouchListener() {
                 @Override
@@ -144,6 +145,10 @@ public class FilesAdapters extends RecyclerSwipeAdapter<FilesAdapters.MetadataVi
                 case R.id.iv_delete:
                     position = getAdapterPosition();
                     mCallback.onDeleteFile(mFiles.get(getAdapterPosition()).getPathDisplay());
+                    break;
+                case R.id.iv_share:
+                    position = getAdapterPosition();
+                    mCallback.onShareFile(mFiles.get(getAdapterPosition()).getPathDisplay());
                     break;
                 default:
                     if (mItem instanceof FolderMetadata) {

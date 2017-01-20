@@ -9,12 +9,10 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="5dp">
-
 
             <ImageView
                 android:id="@+id/iv_close"
@@ -26,11 +24,24 @@
                 android:src="@android:drawable/ic_menu_close_clear_cancel" />
 
             <ImageView
+                android:id="@+id/iv_share"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:layout_toLeftOf="@+id/iv_edit"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_share" />
+
+            <ImageView
                 android:id="@+id/iv_edit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:layout_toLeftOf="@+id/iv_delete"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_edit" />
 
